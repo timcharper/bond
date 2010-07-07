@@ -57,9 +57,25 @@ module Bond
     # See Bond.start
     def start(options={}, &block)
       debrief options
+      warn_if_irb_completion
       load_completions
       Rc.module_eval(&block) if block
       true
+    end
+
+    def warn_if_irb_completion
+      STDERR.puts <<-EOF if IRB.conf[:LOAD_MODULES] && IRB.conf[:LOAD_MODULES].any? { |mod| mod.match(/^irb\/completion(|.rb)/i) }
+WARNING: IRB.conf[:LOAD_MODULES] includes 'irb/completion'
+
+IRB's completion will override Bond's completion, rendering Bond an
+ineffective agent and obstructing his mission.  Suggested fix: remove
+'irb/completion' from IRB.conf[:LOAD_MODULES].  If you want to use
+irb/completion as a failover if Bond happens to not be installed, see
+the following gist:
+
+http://gist.github.com/466288
+
+EOF
     end
 
     def load_gem_completion(rubygem) #:nodoc:
